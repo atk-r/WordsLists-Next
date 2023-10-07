@@ -1,95 +1,178 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client"
+
+import { useEffect, useState } from "react"
 
 export default function Home() {
+  const [authorized, setAuthorized] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const fetchAuthorization = async () => {
+      const resRaw = await fetch("/api/login", {
+        credentials: "same-origin",
+      })
+
+      if (!resRaw.ok) {
+        setAuthorized(false)
+        return
+      }
+
+      setAuthorized(true)
+    }
+
+    fetchAuthorization()
+  }, [])
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    try {
+      const formData = new FormData(e.currentTarget)
+
+      const username = formData.get("username")?.toString()
+      const password = formData.get("password")?.toString()
+
+      if (!username || !password) throw new Error("Please, fill all the fields")
+
+      console.log(username)
+      const resRaw = await fetch("/api/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const resJson = await resRaw.json()
+
+      if (!resRaw.ok) throw new Error(resJson.message)
+
+      const { message } = resJson
+
+      alert(message)
+    } catch (e) {
+      console.error(e)
+
+      alert(e + "")
+    }
+  }
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    try {
+      const formData = new FormData(e.currentTarget)
+
+      const username = formData.get("username")?.toString()
+      const password = formData.get("password")?.toString()
+
+      if (!username || !password) throw new Error("Please, fill all the fields")
+
+      const resRaw = await fetch("/api/login", {
+        method: "POST",
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const resJson = await resRaw.json()
+
+      if (!resRaw.ok) throw new Error(resJson.message)
+
+      const { message } = resJson
+
+      alert(message)
+      window.location.reload()
+    } catch (e) {
+      console.error(e)
+
+      alert(e + "")
+    }
+  }
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main>
+      <h1>login or signup</h1>
+      <p>Is authorized: {JSON.stringify(authorized)}</p>
+      <p>
+        {authorized && (
+          <button
+            onClick={async () => {
+              // remove cookie
+              await fetch("/api/logout")
+              window.location.reload()
+            }}
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            Logout
+          </button>
+        )}
+      </p>
+      <style jsx>
+        {`
+          main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 420px;
+            margin: 32px auto;
+          }
+          form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 16px 0;
+          }
+          label {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 8px 0;
+          }
+          span {
+            margin-bottom: 4px;
+          }
+          input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+          }
+          button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+          }
+        `}
+      </style>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <form onSubmit={handleLogin}>
+        <label>
+          <span>username</span>
+          <input name="username" type="text" />
+        </label>
+        <label>
+          <span>password</span>
+          <input name="password" type="password" />
+        </label>
+        <button type="submit">login</button>
+      </form>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <form onSubmit={handleSignUp}>
+        <label>
+          <span>username</span>
+          <input name="username" type="text" />
+        </label>
+        <label>
+          <span>password</span>
+          <input name="password" type="password" />
+        </label>
+        <button type="submit">signup</button>
+      </form>
     </main>
   )
 }
