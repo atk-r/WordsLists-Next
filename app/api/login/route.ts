@@ -7,14 +7,9 @@ const saltRounds = 10; // Adjust as needed
 export async function POST(req: Request) {
   const { username, password } = await req.json();
 
-  const storedPassword = String(await kv.get(username));
+  const user = await kv.get(username);
 
-  if (storedPassword !== null && (await bcrypt.compare(password, storedPassword))) {
-    const user = {
-      username,
-      password,
-    };
-
+  if (user && (await bcrypt.compare(password, user.password))) {
     // Secret key to sign the token
     const secretKey = process.env.JWT_SECRET as string;
 
