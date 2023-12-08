@@ -1,39 +1,53 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-
+import { useEffect, useState } from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { Box } from "@mui/system";
+import { makeStyles } from "@mui/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import { useStyles, theme } from "../styles/styles";
+  
 export default function Home() {
-  const [authorized, setAuthorized] = useState<boolean | null>(null)
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchAuthorization = async () => {
       const resRaw = await fetch("/api/login", {
         credentials: "same-origin",
-      })
+      });
 
       if (!resRaw.ok) {
-        setAuthorized(false)
-        return
+        setAuthorized(false);
+        return;
       }
 
-      setAuthorized(true)
-    }
+      setAuthorized(true);
+    };
 
-    fetchAuthorization()
-  }, [])
+    fetchAuthorization();
+  }, []);
+
+  const classes = useStyles();
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-      const formData = new FormData(e.currentTarget)
+      const formData = new FormData(e.currentTarget);
 
-      const username = formData.get("username")?.toString()
-      const password = formData.get("password")?.toString()
+      const username = formData.get("username")?.toString();
+      const password = formData.get("password")?.toString();
 
-      if (!username || !password) throw new Error("Please, fill all the fields")
+      if (!username || !password)
+        throw new Error("Please, fill all the fields");
 
-      console.log(username)
+      console.log(username);
       const resRaw = await fetch("/api/signup", {
         method: "POST",
         body: JSON.stringify({
@@ -43,32 +57,33 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      });
 
-      const resJson = await resRaw.json()
+      const resJson = await resRaw.json();
 
-      if (!resRaw.ok) throw new Error(resJson.message)
+      if (!resRaw.ok) throw new Error(resJson.message);
 
-      const { message } = resJson
+      const { message } = resJson;
 
-      alert(message)
+      alert(message);
     } catch (e) {
-      console.error(e)
+      console.error(e);
 
-      alert(e + "")
+      alert(e + "");
     }
-  }
+  };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-      const formData = new FormData(e.currentTarget)
+      const formData = new FormData(e.currentTarget);
 
-      const username = formData.get("username")?.toString()
-      const password = formData.get("password")?.toString()
+      const username = formData.get("username")?.toString();
+      const password = formData.get("password")?.toString();
 
-      if (!username || !password) throw new Error("Please, fill all the fields")
+      if (!username || !password)
+        throw new Error("Please, fill all the fields");
 
       const resRaw = await fetch("/api/login", {
         method: "POST",
@@ -79,100 +94,99 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      });
 
-      const resJson = await resRaw.json()
+      const resJson = await resRaw.json();
 
-      if (!resRaw.ok) throw new Error(resJson.message)
+      if (!resRaw.ok) throw new Error(resJson.message);
 
-      const { message } = resJson
+      const { message } = resJson;
 
-      alert(message)
-      window.location.reload()
+      alert(message);
+      window.location.reload();
     } catch (e) {
-      console.error(e)
+      console.error(e);
 
-      alert(e + "")
+      alert(e + "");
     }
-  }
+  };
+
   return (
-    <main>
-      <h1>login or signup</h1>
-      <p>Is authorized: {JSON.stringify(authorized)}</p>
-      <p>
-        {authorized && (
-          <button
-            onClick={async () => {
-              // remove cookie
-              await fetch("/api/logout")
-              window.location.reload()
-            }}
-          >
-            Logout
-          </button>
-        )}
-      </p>
-      <style jsx>
-        {`
-          main {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 420px;
-            margin: 32px auto;
-          }
-          form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 16px 0;
-          }
-          label {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin: 8px 0;
-          }
-          span {
-            margin-bottom: 4px;
-          }
-          input {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-          }
-          button {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-          }
-        `}
-      </style>
+    <ThemeProvider theme={theme}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <Card className={classes.card}>
+          <CardContent>
+            <Typography variant="h5" component="div">
+              Login or Signup
+            </Typography>
+            <Typography variant="body2">
+              Is authorized: {JSON.stringify(authorized)}
+            </Typography>
+            {authorized && (
+              <Button
+                variant="contained"
+                onClick={async () => {
+                  // remove cookie
+                  await fetch("/api/logout");
+                  window.location.reload();
+                }}
+              >
+                Logout
+              </Button>
+            )}
+            <form onSubmit={handleLogin} className={classes.form}>
+              <TextField
+                label="Username"
+                name="username"
+                type="text"
+                fullWidth
+              />
+              <TextField
+                label="Password"
+                name="password"
+                type="password"
+                fullWidth
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                className={classes.submitButton}
+              >
+                Login
+              </Button>
+            </form>
 
-      <form onSubmit={handleLogin}>
-        <label>
-          <span>username</span>
-          <input name="username" type="text" />
-        </label>
-        <label>
-          <span>password</span>
-          <input name="password" type="password" />
-        </label>
-        <button type="submit">login</button>
-      </form>
-
-      <form onSubmit={handleSignUp}>
-        <label>
-          <span>username</span>
-          <input name="username" type="text" />
-        </label>
-        <label>
-          <span>password</span>
-          <input name="password" type="password" />
-        </label>
-        <button type="submit">signup</button>
-      </form>
-    </main>
-  )
+            <form onSubmit={handleSignUp} className={classes.form}>
+              <TextField
+                label="Username"
+                name="username"
+                type="text"
+                fullWidth
+              />
+              <TextField
+                label="Password"
+                name="password"
+                type="password"
+                fullWidth
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                className={classes.submitButton}
+              >
+                Signup
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </Box>
+    </ThemeProvider>
+  );
 }
