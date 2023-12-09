@@ -7,32 +7,44 @@ const saltRounds = 10;
 
 export async function POST(req: Request) {
   const data: { username: string, password: string } = await req.json();
+  const users: types.Users | null = await kv.get("users");
+  
+  if (users) {
+    const user = users[data.username]
 
-  const user: types.dbKey | null = await kv.get(data.username);
+    if (user && (await bcrypt.compare(data.password, user.password))) {
+      // Secret key to sign the token
+      const secretKey = process.env.JWT_SECRET as string;
 
-  if (user && (await bcrypt.compare(data.password, user.password))) {
-    // Secret key to sign the token
-    const secretKey = process.env.JWT_SECRET as string;
+      // Create a JWT token
+      const token = sign(user, secretKey, { expiresIn: "7d" }); // Expires in 7 days
 
-    // Create a JWT token
-    const token = sign(user, secretKey, { expiresIn: "7d" }); // Expires in 7 days
+      const res = new Response(
+        JSON.stringify({ message: "Authentication successful" }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Set-Cookie":
+              "authToken=" +
+              token +
+              "; HttpOnly; Path=/; SameSite=Strict; Max-Age=86400",
+          },
+        }
+      );
 
-    const res = new Response(
-      JSON.stringify({ message: "Authentication successful" }),
-      {
-        status: 200,
+      return res;
+    } else {
+      return new Response(JSON.stringify({ message: "Authentication failed" }), {
+        status: 401,
         headers: {
           "Content-Type": "application/json",
-          "Set-Cookie":
-            "authToken=" +
-            token +
-            "; HttpOnly; Path=/; SameSite=Strict; Max-Age=86400",
         },
-      }
-    );
-
-    return res;
-  } else {
+      });
+    }
+  }
+  else {
+    await kv.set("users", {});
     return new Response(JSON.stringify({ message: "Authentication failed" }), {
       status: 401,
       headers: {

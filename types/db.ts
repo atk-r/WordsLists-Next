@@ -8,8 +8,10 @@ export type dbKey = {
   password: string;
 };
 
+export type Users = { [key in Username]: dbKey }
+
 export type Username = string;
 
 export type db = {
-  [key: Username]: dbKey;
+  users: Users;
 }
