@@ -1,15 +1,16 @@
 import { sign, verify } from "jsonwebtoken";
 import { kv } from "@vercel/kv";
 import * as bcrypt from "bcrypt";
+import * as types from "../../../types/db";
 
-const saltRounds = 10; // Adjust as needed
+const saltRounds = 10;
 
 export async function POST(req: Request) {
-  const { username, password } = await req.json();
+  const data: { username: string, password: string } = await req.json();
 
-  const user = await kv.get(username);
+  const user: types.dbKey | null = await kv.get(data.username);
 
-  if (user && (await bcrypt.compare(password, user.password))) {
+  if (user && (await bcrypt.compare(data.password, user.password))) {
     // Secret key to sign the token
     const secretKey = process.env.JWT_SECRET as string;
 

@@ -1,10 +1,12 @@
-type JSONString<T> = T extends string
+export type JSONString<T> = T extends string
 ? T extends `{"${string}":${string}}`
   ? T
   : never
 : never;
 
-export type dbKey = JSONString<string>;
+export type dbKey = {
+  password: string;
+};
 
 export type Username = string;
 
