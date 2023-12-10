@@ -1,17 +1,17 @@
 import { kv } from "@vercel/kv";
 import * as bcrypt from "bcrypt";
-import * as types from "../../../types/db";
+import type * as types from "../../../types/db";
 
 const saltRounds = 10;
 
 export async function POST(req: Request) {
   const { username, password } = await req.json();
 
-  const users: types.Users | null = await kv.get("users");
-  if (!users) {
+  if (!(await kv.get("users"))) {
     await kv.set("users", {});
   }
-  const exists = await kv.get(username);
+  const users: types.User = (await kv.get("users")) as types.User;
+  const exists = users![username as keyof types.User];
 
   if (exists) {
     return new Response(JSON.stringify({ message: "User already exists" }), {

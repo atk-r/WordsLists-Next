@@ -1,16 +1,16 @@
 import { sign, verify } from "jsonwebtoken";
 import { kv } from "@vercel/kv";
 import * as bcrypt from "bcrypt";
-import * as types from "../../../types/db";
+import type * as types from "../../../types/db";
 
 const saltRounds = 10;
 
 export async function POST(req: Request) {
-  const data: { username: string, password: string } = await req.json();
+  const data: { username: string; password: string } = await req.json();
   const users: types.Users | null = await kv.get("users");
-  
+
   if (users) {
-    const user = users[data.username]
+    const user = users[data.username];
 
     if (user && (await bcrypt.compare(data.password, user.password))) {
       // Secret key to sign the token
@@ -35,15 +35,17 @@ export async function POST(req: Request) {
 
       return res;
     } else {
-      return new Response(JSON.stringify({ message: "Authentication failed" }), {
-        status: 401,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return new Response(
+        JSON.stringify({ message: "Authentication failed" }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-  }
-  else {
+  } else {
     await kv.set("users", {});
     return new Response(JSON.stringify({ message: "Authentication failed" }), {
       status: 401,

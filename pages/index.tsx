@@ -12,7 +12,7 @@ import { Box } from "@mui/system";
 import { makeStyles } from "@mui/styles";
 import { ThemeProvider } from "@mui/material/styles";
 import { useStyles, theme } from "../styles/styles";
-  
+
 export default function Home() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
