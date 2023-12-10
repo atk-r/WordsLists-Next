@@ -7,11 +7,12 @@ export type JSONString<T> = T extends string
   : never;
 
 export type User = {
+  username: string;
   password: string;
   wordlists: wordListTypes.WordList[];
 };
 
-export type Users = { [key in Username]: User };
+export type Users = User[];
 
 export type Username = string;
 

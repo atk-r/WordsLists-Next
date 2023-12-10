@@ -10,14 +10,17 @@ export async function POST(req: Request) {
   const users: types.Users | null = await kv.get("users");
 
   if (users) {
-    const user = users[data.username];
+    const user = users[users.findIndex(user => user.username === data.username)];
 
     if (user && (await bcrypt.compare(data.password, user.password))) {
       // Secret key to sign the token
       const secretKey = process.env.JWT_SECRET as string;
 
       // Create a JWT token
-      const token = sign(user, secretKey, { expiresIn: "7d" }); // Expires in 7 days
+      const userIndex = String(
+        users.findIndex((_user) => _user === user)
+      );
+      const token = sign(userIndex, secretKey, { expiresIn: "14d" }); // Expires in 7 days
 
       const res = new Response(
         JSON.stringify({ message: "Authentication successful" }),
@@ -46,7 +49,7 @@ export async function POST(req: Request) {
       );
     }
   } else {
-    await kv.set("users", {});
+    await kv.set("users", []);
     return new Response(JSON.stringify({ message: "Authentication failed" }), {
       status: 401,
       headers: {
@@ -66,7 +69,8 @@ export async function GET(req: Request) {
 
     if (!token) throw new Error("No token provided");
 
-    const decoded = verify(token, process.env.JWT_SECRET as string);
+    const decoded = verify(token, process.env.JWT_SECRET as string); // index of the user in users
+    const userIndex = Number(decoded); // use later
 
     if (!decoded) {
       return new Response(JSON.stringify({ message: "Authorization failed" }), {
