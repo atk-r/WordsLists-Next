@@ -23,9 +23,9 @@ export async function POST(req: Request) {
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const updatedUsers = {
+  const updatedUsers: types.Users = {
     ...users,
-    username: { password: hashedPassword },
+    username: { password: hashedPassword, wordlists: [] },
   };
   await kv.set("users", updatedUsers);
 
