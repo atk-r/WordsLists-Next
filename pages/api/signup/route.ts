@@ -10,8 +10,8 @@ export async function POST(req: Request) {
   if (!(await kv.get("users"))) {
     await kv.set("users", {});
   }
-  const users: types.User = (await kv.get("users")) as types.User;
-  const exists = users![username as keyof types.User];
+  const users: types.Users = (await kv.get("users")) as types.Users;
+  const exists = users![username as keyof types.Users];
 
   if (exists) {
     return new Response(JSON.stringify({ message: "User already exists" }), {
@@ -23,7 +23,11 @@ export async function POST(req: Request) {
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  await kv.set(username, { password: hashedPassword });
+  const updatedUsers = {
+    ...users,
+    username: { password: hashedPassword },
+  };
+  await kv.set("users", updatedUsers);
 
   return new Response(JSON.stringify({ message: "User signed up!" }), {
     status: 200,
